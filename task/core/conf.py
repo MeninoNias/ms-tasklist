@@ -1,25 +1,31 @@
-from pydantic import BaseSettings, PostgresDsn
+from pydantic import PostgresDsn, computed_field
+from pydantic_core import MultiHostUrl
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+    model_config = SettingsConfigDict(
+        env_file=".env", env_ignore_empty=True, extra="ignore"
+    )
+
+    API_V1_STR: str = "/api/v1"
+
     POSTGRES_SERVER: str
     POSTGRES_PORT: int = 5432
     POSTGRES_USER: str
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str = ""
 
-    class Config:
-        env_file = "../../.env"
-
+    @computed_field
     @property
-    def SQLALCHEMY_DATABASE_URI(self) -> str:
+    def SQLALCHEMY_DATABASE_URI(self) -> PostgresDsn:
         return PostgresDsn.build(
-            scheme="postgresql+psycopg2",
-            user=self.POSTGRES_USER,
+            scheme="postgresql",
+            username=self.POSTGRES_USER,
             password=self.POSTGRES_PASSWORD,
             host=self.POSTGRES_SERVER,
-            port=str(self.POSTGRES_PORT),
-            path=f"/{self.POSTGRES_DB}",
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_DB,
         )
 
 
