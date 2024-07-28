@@ -20,3 +20,12 @@ class Task(TaskBase):
 
     class Config:
         orm_mode = True
+
+
+class TaskList(BaseModel):
+    tasks: list[Task]
+
+
+# Generic message
+class Message(BaseModel):
+    message: str

@@ -8,6 +8,7 @@ class Settings(BaseSettings):
         env_file=".env", env_ignore_empty=True, extra="ignore"
     )
 
+    PROJECT_NAME: str = "To do manager"
     API_V1_STR: str = "/api/v1"
 
     POSTGRES_SERVER: str
