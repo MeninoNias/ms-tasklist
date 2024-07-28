@@ -1,3 +1,5 @@
+from contextlib import asynccontextmanager
+
 import redis
 
 from fastapi import FastAPI
@@ -17,17 +19,21 @@ def custom_generate_unique_id(route: APIRoute) -> str:
     return f"{route.tags[0]}-{route.name}"
 
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Inicializa o cliente Redis
+    redis_client = redis.Redis(host="localhost", port=6379, db=0)
+    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+
+    # Yield para manter a aplicação viva
+    yield
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json",
     generate_unique_id_function=custom_generate_unique_id,
+    lifespan=lifespan
 )
-
-
-@app.on_event("startup")
-async def startup():
-    redis_client = redis.Redis(host="localhost", port=6379, db=0)
-    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
-
 
 app.include_router(api_router, prefix=settings.API_V1_STR)
