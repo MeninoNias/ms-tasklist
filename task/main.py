@@ -1,16 +1,16 @@
+import logging
 from contextlib import asynccontextmanager
 
 import redis
-
 from fastapi import FastAPI
 from fastapi.routing import APIRoute
-
 from fastapi_cache import FastAPICache
 from fastapi_cache.backends.redis import RedisBackend
 
+from task.api.main import api_router
 from task.core.conf import settings
 
-from task.api.main import api_router
+logging.basicConfig(level=logging.DEBUG)
 
 
 # models.Base.metadata.create_all(bind=engine)
@@ -22,8 +22,12 @@ def custom_generate_unique_id(route: APIRoute) -> str:
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Inicializa o cliente Redis
-    redis_client = redis.Redis(host="localhost", port=6379, db=0)
-    FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+    try:
+        redis_client = redis.Redis(host="localhost", port=6379, db=0)
+        FastAPICache.init(RedisBackend(redis_client), prefix="fastapi-cache")
+        logging.info("Cache initialized successfully.")
+    except Exception as e:
+        logging.error(f"Error initializing cache: {e}")
 
     # Yield para manter a aplicação viva
     yield

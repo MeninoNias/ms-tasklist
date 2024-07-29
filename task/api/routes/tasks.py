@@ -1,34 +1,31 @@
 from fastapi import APIRouter, HTTPException, Query
 from fastapi_cache.decorator import cache
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from task import schemas, crud
-from task.schemas import TaskList, Message
 from task.api.deps import SessionDep
+from task.schemas import Message, TaskList
 
 router = APIRouter()
 
 
-@router.post("/", response_model=schemas.Task)
-def create_task(task: schemas.TaskCreate, db: SessionDep):
+@router.post("/", response_model=schemas.Task, status_code=201)
+def create_task(db: SessionDep, task: schemas.TaskCreate):
     return crud.create_task(db=db, task=task)
 
 
-@router.get('/', response_model=list[schemas.Task])
+@router.get('/', response_model=TaskList)
 @cache(expire=60)
 def list_task(  # noqa
         db: SessionDep,
         search: str = Query(None),
         skip: int = 0,
         limit: int = 100):
-    return crud.get_tasks(db, search, skip, limit)
+    return {"tasks": crud.get_tasks(db, search, skip, limit)}
 
 
 @router.get("/{task_id}", response_model=schemas.Task)
 @cache(expire=60)
-def read_task(task_id: int, db: SessionDep):
+def read_task(db: SessionDep, task_id: int):
     db_task = crud.get_task(db, task_id=task_id)
     if db_task is None:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -36,7 +33,7 @@ def read_task(task_id: int, db: SessionDep):
 
 
 @router.put("/{task_id}", response_model=schemas.Task)
-def update_task(task: schemas.TaskUpdate, task_id: int, db: SessionDep):
+def update_task(db: SessionDep, task: schemas.TaskUpdate, task_id: int):
     db_task = crud.update_task(db, task_id, task)
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
@@ -44,16 +41,16 @@ def update_task(task: schemas.TaskUpdate, task_id: int, db: SessionDep):
 
 
 @router.patch("/{task_id}", response_model=schemas.Task)
-def path_task(task_id: int, db: SessionDep):
+def path_task(db: SessionDep, task_id: int):
     db_task = crud.update_task_partial(db, task_id)
     if not db_task:
         raise HTTPException(status_code=404, detail="Task not found")
     return db_task
 
 
-@router.delete("/{task_id]", response_model=Message)
+@router.delete("/{task_id}", response_model=Message)
 def delete_task(db: SessionDep, task_id: int):
     task = crud.delete_task(db, task_id)
     if not task:
         raise HTTPException(status_code=404, detail="Task not found")
-    return Message(message="Task deleted successfully")
+    return Message(message="Task has been deleted successfully.")
