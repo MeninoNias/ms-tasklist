@@ -31,8 +31,12 @@ async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logging.info("Cache initialized successfully.")
     except Exception as e:
         logging.error(f"Error initializing cache: {e}")
+        yield
 
-    yield
+    finally:
+        # Clean up resources if needed
+        await redis.close()
+        logging.info("Redis connection closed.")
 
 
 app = FastAPI(

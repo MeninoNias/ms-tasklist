@@ -16,7 +16,10 @@ def session():
     table_registry.metadata.create_all(engine)
 
     with Session(engine) as session:
-        yield session
+        try:
+            yield session
+        finally:
+            session.close()
 
     table_registry.metadata.drop_all(engine)
 
@@ -24,7 +27,10 @@ def session():
 @pytest.fixture
 def client(session):
     def get_session_override():
-        return session
+        try:
+            yield session
+        finally:
+            session.close()
 
     with TestClient(app) as client:
         app.dependency_overrides[get_session] = get_session_override
