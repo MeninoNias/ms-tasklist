@@ -18,7 +18,6 @@ def test_create_task(client: TestClient):
 
 
 def test_read_tasks(client: TestClient):
-    print(client.app.dependency_overrides)
     response = client.get('/api/v1/tasks')
     assert response.status_code == HTTPStatus.OK
     assert response.json() == {'tasks': []}
@@ -43,7 +42,6 @@ def test_update_task(session, client):
         f'/api/v1/tasks/{task.id}',
         json={'title': 'teste!'},
     )
-    print(response.json())
     assert response.status_code == HTTPStatus.OK
     assert response.json()['title'] == 'teste!'
 
@@ -66,6 +64,5 @@ def test_delete_task_error(client: TestClient):
     response = client.delete(
         f'/api/v1/tasks/{100}'
     )
-    print(response.json())
     assert response.status_code == HTTPStatus.NOT_FOUND
     assert response.json() == {'detail': 'Task not found'}
