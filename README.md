@@ -19,15 +19,6 @@ Você pode acessar a documentação interativa da API do To-Do List através des
     - **GET**: Buscar uma tarefa específica
     - **DELETE**: Deletar uma tarefa
 
-## Como Rodar o Projeto Localmente
-
-### Pré-requisitos
-
-- Python 3.9+
-- Docker
-- Docker Compose
-- Kubernetes (kubectl)
-
 ## Implantação
 
 A aplicação foi implantada na AWS EC2 utilizando Docker Compose, Nginx e um balanceador de carga.
@@ -49,6 +40,14 @@ A arquitetura da implantação inclui:
 - Um container para o Nginx configurado como proxy reverso.
 - Um balanceador de carga configurado na AWS para distribuir o tráfego entre as instâncias.
 
+## Como Rodar o Projeto Localmente
+
+### Pré-requisitos
+
+- Python 3.9+
+- Docker
+- Docker Compose
+- Kubernetes (kubectl)
 
 ### Instalação
 
